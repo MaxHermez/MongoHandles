@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"reflect"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,11 +17,6 @@ type Conn struct {
 type MongoField struct {
 	Key   string
 	Value string
-}
-type LogLine struct {
-	Timestamp time.Time
-	Level     string
-	Message   string
 }
 
 func NewConn(URI string) (*Conn, error) {
@@ -71,4 +65,26 @@ func (x Conn) GetCollection(db string, coll string, ctx context.Context) ([]inte
 		}
 	}
 	return lines, nil
+}
+
+func (x Conn) ReplaceEntry(db string, coll string, filter interface{}, replacement interface{}, ctx context.Context) error {
+	client := x.Client
+	collection := client.Database(db).Collection(coll)
+	_, err := collection.ReplaceOne(ctx, filter, replacement)
+	if err != nil {
+		return err
+	}
+	log.Println("Replaced successfully")
+	return nil
+}
+
+func (x Conn) DeleteOne(db string, coll string, filter interface{}, ctx context.Context) error {
+	client := x.Client
+	collection := client.Database(db).Collection(coll)
+	_, err := collection.DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+	log.Println("Deleted successfully")
+	return nil
 }
